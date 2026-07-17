@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
-export const ALLOWED_COMMANDS = new Set([
+export const RAW_ALLOWED_COMMANDS = new Set([
   "add-tab",
   "cat",
   "comment",
@@ -31,6 +31,33 @@ export const ALLOWED_COMMANDS = new Set([
   "write",
 ]);
 
+const EXECUTABLE_COMMANDS = new Set(["auth", ...RAW_ALLOWED_COMMANDS]);
+
+function candidateBundleRoots() {
+  return [path.join(here, ".."), path.join(here, "..", "mcpb")];
+}
+
+export function loadBundleProfile() {
+  for (const root of candidateBundleRoots()) {
+    const profilePath = path.join(root, "config", "profile.json");
+    if (!fs.existsSync(profilePath)) continue;
+    try {
+      return JSON.parse(fs.readFileSync(profilePath, "utf8"));
+    } catch (error) {
+      throw new Error(`invalid bundled profile at ${profilePath}: ${error.message}`);
+    }
+  }
+  return { slug: "development", display_name: "Google Docs (gdoc)" };
+}
+
+export function resolveBundledCredentials() {
+  for (const root of candidateBundleRoots()) {
+    const credentials = path.join(root, "config", "oauth-client.json");
+    if (fs.existsSync(credentials)) return credentials;
+  }
+  return null;
+}
+
 export function resolveGdocBin(env = process.env) {
   const configured = env.GDOC_BIN?.trim();
   if (configured && !configured.startsWith("${")) return configured;
@@ -46,7 +73,7 @@ export function resolveGdocBin(env = process.env) {
 }
 
 export function commandArgv(command, args = []) {
-  if (!ALLOWED_COMMANDS.has(command)) {
+  if (!EXECUTABLE_COMMANDS.has(command)) {
     throw new Error(`unsupported gdoc command: ${command}`);
   }
   if (args.some((arg) => typeof arg !== "string" || arg.includes("\0"))) {
@@ -59,6 +86,10 @@ export function runGdoc(command, args = [], options = {}) {
   const argv = commandArgv(command, args);
   const gdocBin = options.gdocBin ?? resolveGdocBin(options.env);
   const env = { ...process.env, ...options.env, GDOC_AUTO_UPDATE: "0" };
+  const bundledCredentials = resolveBundledCredentials();
+  const profile = loadBundleProfile();
+  if (bundledCredentials) env.GDOC_CLIENT_CREDENTIALS = bundledCredentials;
+  if (profile.auth_domain) env.GDOC_AUTH_DOMAIN = profile.auth_domain;
 
   return new Promise((resolve) => {
     execFile(
@@ -74,8 +105,12 @@ export function runGdoc(command, args = [], options = {}) {
 
 export function asMcpResult(result) {
   if (!result.ok) {
+    let text = result.stdout.trim() || result.stderr.trim() || result.error || "gdoc failed with no output";
+    if (/Run `gdoc auth/.test(text)) {
+      text += "\n\nUse the connect_google MCP tool to authenticate in your browser.";
+    }
     return {
-      content: [{ type: "text", text: result.stdout.trim() || result.stderr.trim() || result.error || "gdoc failed with no output" }],
+      content: [{ type: "text", text }],
       isError: true,
     };
   }

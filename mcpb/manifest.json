@@ -2,8 +2,8 @@
   "manifest_version": "0.3",
   "name": "gdoc",
   "display_name": "Google Docs (gdoc)",
-  "version": "0.1.0",
-  "description": "Read, edit, and review Google Docs and Sheets through the gdoc CLI.",
+  "version": "0.2.0",
+  "description": "Read, edit, and review Google Docs and Sheets, with browser-based Google authorization.",
   "author": { "name": "Alejo Acelas" },
   "server": {
     "type": "node",

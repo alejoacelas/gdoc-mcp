@@ -7,7 +7,7 @@ const transport = new StdioClientTransport({
   args: [path.resolve("server/index.js")],
   env: { ...process.env },
 });
-const client = new Client({ name: "gdoc-smoke", version: "0.1.0" });
+const client = new Client({ name: "gdoc-smoke", version: "0.2.0" });
 await client.connect(transport);
 const { tools } = await client.listTools();
 console.log(`${tools.length} tools: ${tools.map((tool) => tool.name).join(", ")}`);

@@ -1,0 +1,7 @@
+{
+  "slug": "personal",
+  "name": "gdoc-personal",
+  "display_name": "Google Docs (personal gdoc)",
+  "default_account": "alejoacelas@gmail.com",
+  "auth_domain": ""
+}

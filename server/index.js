@@ -1,9 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { ALLOWED_COMMANDS, asMcpResult, runGdoc, withMarkdownFile } from "./runner.js";
+import {
+  RAW_ALLOWED_COMMANDS,
+  asMcpResult,
+  loadBundleProfile,
+  runGdoc,
+  withMarkdownFile,
+} from "./runner.js";
 
-const server = new McpServer({ name: "gdoc", version: "0.1.0" });
+const server = new McpServer({ name: "gdoc", version: "0.2.0" });
+const profile = loadBundleProfile();
 
 const account = z.string().optional().describe("Authenticated gdoc account name or email");
 const doc = z.string().describe("Google Doc/Sheet URL or file ID");
@@ -27,6 +34,34 @@ function tool(name, description, inputSchema, command, buildArgs) {
     }
   });
 }
+
+server.registerTool("connect_google", {
+  description: "Connect Google Docs by opening Google's authorization page in the user's browser. Use this when gdoc reports that it is not authenticated. The bundled OAuth client is selected automatically; no terminal or copied token is needed.",
+  inputSchema: {
+    account: z.string().optional().describe("Google account email or local account name; defaults to this bundle's configured account"),
+  },
+}, async ({ account }) => {
+  try {
+    const selectedAccount = account || profile.default_account;
+    const args = [];
+    option(args, "--account", selectedAccount);
+    const result = await runGdoc("auth", args);
+    if (!result.ok) return asMcpResult(result);
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          ok: true,
+          account: selectedAccount || "default",
+          profile: profile.slug,
+          message: "Google connected. You can now use the Google Docs tools.",
+        }),
+      }],
+    };
+  } catch (error) {
+    return { content: [{ type: "text", text: String(error?.message ?? error) }], isError: true };
+  }
+});
 
 tool("list_files", "List Google Docs or Sheets in Drive or a folder.", {
   folder_id: z.string().optional(),
@@ -236,7 +271,7 @@ tool("share_document", "Share a document with an email address.", {
 server.registerTool("gdoc_cli", {
   description: "Run an allowlisted gdoc command for options not covered by typed tools. Arguments are passed directly without a shell.",
   inputSchema: {
-    command: z.enum([...ALLOWED_COMMANDS]),
+    command: z.enum([...RAW_ALLOWED_COMMANDS]),
     args: z.array(z.string()).default([]).describe("Arguments after the subcommand; add --account when needed"),
   },
 }, async ({ command, args }) => asMcpResult(await runGdoc(command, args)));

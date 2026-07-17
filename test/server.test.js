@@ -11,7 +11,7 @@ test("stdio server lists tools and invokes gdoc without a shell", async () => {
   const fake = path.join(dir, "fake-gdoc");
   await fs.promises.writeFile(
     fake,
-    "#!/usr/bin/env node\nconsole.log(JSON.stringify({ok:true, argv:process.argv.slice(2)}));\n",
+    "#!/usr/bin/env node\nconsole.log(JSON.stringify({ok:true, argv:process.argv.slice(2), credentials:process.env.GDOC_CLIENT_CREDENTIALS||null, domain:process.env.GDOC_AUTH_DOMAIN||null}));\n",
     { mode: 0o700 },
   );
 
@@ -24,8 +24,9 @@ test("stdio server lists tools and invokes gdoc without a shell", async () => {
   try {
     await client.connect(transport);
     const { tools } = await client.listTools();
-    assert.ok(tools.length >= 20);
+    assert.ok(tools.length >= 22);
     assert.ok(tools.some(({ name }) => name === "write_document"));
+    assert.ok(tools.some(({ name }) => name === "connect_google"));
 
     const result = await client.callTool({
       name: "read_document",
@@ -36,6 +37,18 @@ test("stdio server lists tools and invokes gdoc without a shell", async () => {
       "--json", "--allow-commands", "cat", "cat", "--quiet", "--all-tabs", "--",
       "doc id; touch /tmp/never",
     ]);
+
+    const connected = await client.callTool({
+      name: "connect_google",
+      arguments: { account: "me@example.com" },
+    });
+    assert.equal(connected.isError, undefined);
+    assert.deepEqual(JSON.parse(connected.content[0].text), {
+      ok: true,
+      account: "me@example.com",
+      profile: "development",
+      message: "Google connected. You can now use the Google Docs tools.",
+    });
   } finally {
     await client.close();
     await fs.promises.rm(dir, { recursive: true, force: true });

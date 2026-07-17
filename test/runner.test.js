@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { asMcpResult, commandArgv, resolveGdocBin, withMarkdownFile } from "../server/runner.js";
+import {
+  RAW_ALLOWED_COMMANDS,
+  asMcpResult,
+  commandArgv,
+  resolveGdocBin,
+  withMarkdownFile,
+} from "../server/runner.js";
 
 test("commandArgv forces JSON and restricts the CLI subcommand", () => {
   assert.deepEqual(commandArgv("cat", ["--quiet", "--", "doc-id"]), [
@@ -10,7 +16,14 @@ test("commandArgv forces JSON and restricts the CLI subcommand", () => {
 });
 
 test("commandArgv rejects commands outside the MCP allowlist", () => {
-  assert.throws(() => commandArgv("auth"), /unsupported gdoc command/);
+  assert.throws(() => commandArgv("update"), /unsupported gdoc command/);
+});
+
+test("auth is executable only through the typed connection tool", () => {
+  assert.deepEqual(commandArgv("auth", ["--account", "me@example.com"]), [
+    "--json", "--allow-commands", "auth", "auth", "--account", "me@example.com",
+  ]);
+  assert.equal(RAW_ALLOWED_COMMANDS.has("auth"), false);
 });
 
 test("resolveGdocBin honors explicit configuration", () => {
@@ -25,6 +38,10 @@ test("asMcpResult preserves structured errors and successful stderr notices", ()
   assert.equal(
     asMcpResult({ ok: true, stdout: "{\"ok\":true}\n", stderr: "changed", error: "" }).content[0].text,
     "{\"ok\":true}\n\n[gdoc notice] changed",
+  );
+  assert.match(
+    asMcpResult({ ok: false, stdout: "", stderr: "ERR: Not authenticated. Run `gdoc auth`.", error: "" }).content[0].text,
+    /connect_google MCP tool/,
   );
 });
 
