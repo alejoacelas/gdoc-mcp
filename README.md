@@ -6,7 +6,16 @@ It follows [JP Addison's `dharma`](https://github.com/jpaddison3/dharma) pattern
 the MCP server validates tool inputs, runs the CLI without a shell, returns structured
 output, and keeps an allowlisted escape hatch for new CLI features.
 
-## Install and connect
+## Chosen deployment
+
+Use the hosted MCP connector for 80,000 Hours. A Claude owner adds one URL; each staff
+member clicks **Connect** and authorizes their own Google account. This is the only
+option that gives staff the same connector-level experience as native Drive.
+
+The local MCPB remains a fallback for development, personal use, or environments where
+hosting Google refresh tokens is unacceptable. It is not the planned staff deployment.
+
+## Local fallback
 
 Recipients do not need a terminal, Python, Node, `uv`, or a separate `gdoc` install:
 
