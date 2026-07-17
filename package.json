@@ -1,0 +1,16 @@
+{
+  "name": "gdoc-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed MCP tools backed by the gdoc CLI",
+  "scripts": {
+    "start": "node server/index.js",
+    "test": "node --test",
+    "build:mcpb": "bash scripts/build-mcpb.sh"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "zod": "^3.25.76"
+  }
+}

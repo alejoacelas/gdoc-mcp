@@ -1,0 +1,30 @@
+{
+  "manifest_version": "0.3",
+  "name": "gdoc",
+  "display_name": "Google Docs (gdoc)",
+  "version": "0.1.0",
+  "description": "Read, edit, and review Google Docs and Sheets through the gdoc CLI.",
+  "author": { "name": "Alejo Acelas" },
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": { "GDOC_BIN": "${user_config.gdoc_bin}" }
+    }
+  },
+  "user_config": {
+    "gdoc_bin": {
+      "type": "string",
+      "title": "gdoc executable (optional)",
+      "description": "Leave blank to use the copy bundled with the extension. Set an absolute path to use another gdoc installation.",
+      "required": false,
+      "sensitive": false
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}
