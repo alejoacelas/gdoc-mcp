@@ -34,6 +34,10 @@ tool.
 
 ## Remote connector
 
+Follow [the personal end-to-end test guide](docs/personal-test.md) to configure Google
+Cloud, install the Web OAuth credential without exposing it, add the connector to
+Claude, and verify read and write calls.
+
 The remote service gives Claude Team users the native connector flow: an owner adds
 `https://gdoc-mcp-alejo.fly.dev/mcp` once, then each user clicks **Connect** and grants
 Google access. The deployed endpoint is healthy, but its current personal Desktop OAuth
