@@ -1,11 +1,12 @@
 {
   "name": "gdoc-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Typed MCP tools backed by the gdoc CLI",
   "scripts": {
     "start": "node server/index.js",
+    "start:remote": "node server/remote.js",
     "test": "node --test",
     "build:mcpb": "bash scripts/build-mcpb.sh"
   },

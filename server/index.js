@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import {
   RAW_ALLOWED_COMMANDS,
@@ -9,7 +10,8 @@ import {
   withMarkdownFile,
 } from "./runner.js";
 
-const server = new McpServer({ name: "gdoc", version: "0.2.0" });
+export function createGdocServer({ remote = false } = {}) {
+const server = new McpServer({ name: "gdoc", version: "0.3.0" });
 const profile = loadBundleProfile();
 
 const account = z.string().optional().describe("Authenticated gdoc account name or email");
@@ -35,7 +37,7 @@ function tool(name, description, inputSchema, command, buildArgs) {
   });
 }
 
-server.registerTool("connect_google", {
+if (!remote) server.registerTool("connect_google", {
   description: "Connect Google Docs by opening Google's authorization page in the user's browser. Use this when gdoc reports that it is not authenticated. The bundled OAuth client is selected automatically; no terminal or copied token is needed.",
   inputSchema: {
     account: z.string().optional().describe("Google account email or local account name; defaults to this bundle's configured account"),
@@ -276,4 +278,9 @@ server.registerTool("gdoc_cli", {
   },
 }, async ({ command, args }) => asMcpResult(await runGdoc(command, args)));
 
-await server.connect(new StdioServerTransport());
+return server;
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  await createGdocServer().connect(new StdioServerTransport());
+}

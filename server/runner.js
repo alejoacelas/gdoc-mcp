@@ -1,10 +1,16 @@
 import { execFile } from "node:child_process";
+import { AsyncLocalStorage } from "node:async_hooks";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
+const executionContext = new AsyncLocalStorage();
+
+export function withGdocContext(options, callback) {
+  return executionContext.run(options, callback);
+}
 
 export const RAW_ALLOWED_COMMANDS = new Set([
   "add-tab",
@@ -83,6 +89,7 @@ export function commandArgv(command, args = []) {
 }
 
 export function runGdoc(command, args = [], options = {}) {
+  options = { ...(executionContext.getStore() ?? {}), ...options };
   const argv = commandArgv(command, args);
   const gdocBin = options.gdocBin ?? resolveGdocBin(options.env);
   const env = { ...process.env, ...options.env, GDOC_AUTO_UPDATE: "0" };

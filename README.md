@@ -23,6 +23,43 @@ the resulting refresh token locally under `~/.config/gdoc/` with mode `0600`.
 button is available to remote MCP connectors; a local MCPB initiates OAuth from its own
 tool.
 
+## Remote connector
+
+The remote service gives Claude Team users the native connector flow: an owner adds
+`https://gdoc-mcp-alejo.fly.dev/mcp` once, then each user clicks **Connect** and grants
+Google access. The deployed endpoint is healthy, but its current personal Desktop OAuth
+credential cannot accept a hosted callback. Before testing Connect, create a Google
+OAuth client of type **Web application** with this authorized redirect URI:
+
+```text
+https://gdoc-mcp-alejo.fly.dev/oauth/google/callback
+```
+
+Then replace the two staged Fly secrets and redeploy:
+
+```sh
+flyctl secrets set --app gdoc-mcp-alejo \
+  GOOGLE_CLIENT_ID='<web-client-id>' \
+  GOOGLE_CLIENT_SECRET='<web-client-secret>'
+
+flyctl deploy --app gdoc-mcp-alejo --remote-only
+```
+
+For 80,000 Hours, deploy a separate organization-owned instance, set
+`ALLOWED_GOOGLE_DOMAIN=80000hours.org`, and use an Internal Web OAuth client owned by
+the Workspace organization. Keeping personal and organizational deployments separate
+prevents a credential switch from invalidating another profile's stored grants.
+
+The service implements MCP dynamic client registration, S256 PKCE, OAuth resource
+indicators, Google identity verification, one-hour MCP access tokens, MCP refresh
+tokens, and per-user MCP sessions. Google refresh tokens and MCP credentials are stored
+in one AES-256-GCM encrypted file on an encrypted persistent volume. The encryption key
+is a deployment secret. A Google token is materialized in a mode-`0600` temporary home
+directory only while `gdoc` handles a request, then removed.
+
+The current encrypted file store requires one running machine. Before adding replicas,
+replace it with a transactional shared database or add cross-process locking.
+
 ## Private build profiles
 
 OAuth client files identify their owning Google Cloud project and must not be committed
@@ -73,6 +110,13 @@ update, and internal hooks cannot be reached through that raw tool.
 npm test
 ```
 
+The live deployment can be checked without Google credentials:
+
+```sh
+curl -fsS https://gdoc-mcp-alejo.fly.dev/health
+curl -fsS https://gdoc-mcp-alejo.fly.dev/.well-known/oauth-protected-resource/mcp
+```
+
 Tests use a fake CLI: they do not open a browser or call Google. The profile build also
 validates the manifest and packages a platform-native CLI. After unpacking a built
 bundle, a smoke test should list tools and call `gdoc_cli` with `cat --help`; this proves
@@ -98,6 +142,8 @@ OS/architecture selection to one multi-platform bundle.
 - Model-provided values go to `execFile`, never a shell.
 - The raw CLI tool excludes authentication and administrative commands.
 - Temporary Markdown files used for writes are mode `0600` and removed after use.
+- Remote Google grants and MCP credentials are encrypted at rest; OAuth state and PKCE
+  bind each browser callback to the initiating Claude connection.
 - The bundled executable is unsigned, so a downloaded bundle may need Gatekeeper
   approval.
 

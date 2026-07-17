@@ -1,0 +1,10 @@
+.git
+.projects
+build
+dist
+mcpb
+node_modules
+profiles
+test
+*.log
+.env*
