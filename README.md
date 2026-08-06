@@ -1,8 +1,4 @@
----
-human_edit_tracking:
-  enabled: true
-  history: []
----
+<!--ai-->
 # gdoc MCP
 
 Typed MCP tools backed by [Luca De Leo's `gdoc` CLI](https://github.com/LucaDeLeo/gdoc).
@@ -165,3 +161,4 @@ OS/architecture selection to one multi-platform bundle.
   approval.
 
 MIT.
+<!--/ai-->
