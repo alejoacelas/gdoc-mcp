@@ -53,6 +53,22 @@ test("GoogleOAuthProvider keeps Google grants behind separate MCP tokens", async
     assert.notEqual(issued.refresh_token, "google-refresh");
     assert.equal((await provider.verifyAccessToken(issued.access_token)).extra.userId, "google-user");
     assert.equal((await provider.googleCredentials("google-user")).refresh_token, "google-refresh");
+
+    const refreshed = await provider.exchangeRefreshToken(
+      client,
+      issued.refresh_token,
+      ["mcp:tools"],
+      params.resource,
+    );
+    assert.notEqual(refreshed.refresh_token, issued.refresh_token);
+    await assert.rejects(
+      provider.exchangeRefreshToken(client, issued.refresh_token, ["mcp:tools"], params.resource),
+      /Invalid refresh token/,
+    );
+    await assert.rejects(
+      provider.exchangeRefreshToken(client, refreshed.refresh_token, ["mcp:admin"], params.resource),
+      /Requested scope was not granted/,
+    );
   } finally {
     globalThis.fetch = originalFetch;
     await fs.promises.rm(dir, { recursive: true, force: true });

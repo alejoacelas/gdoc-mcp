@@ -37,6 +37,11 @@ Follow [the personal end-to-end test guide](docs/personal-test.md) to configure 
 Cloud, install the Web OAuth credential without exposing it, add the connector to
 Claude, and verify read and write calls.
 
+A remote connector is installed by URL, not as an `.mcpb`: Claude reaches it from
+Anthropic's infrastructure even when the client is Claude Desktop. After connecting,
+use the [round-trip challenge](docs/remote-connector-challenge.md) to test Markdown
+import, native tables, tabs, exact edits and comment threads.
+
 The remote service gives Claude Team users the native connector flow: an owner adds
 `https://gdoc-mcp-alejo.fly.dev/mcp` once, then each user clicks **Connect** and grants
 Google access. The deployed endpoint is healthy, but its current personal Desktop OAuth

@@ -124,7 +124,12 @@ export class GoogleOAuthProvider {
       const value = data.tokens[refreshToken];
       if (!value || value.type !== "refresh" || value.clientId !== client.client_id) throw new InvalidGrantError("Invalid refresh token");
       if (resource && value.resource && resource.href !== value.resource) throw new InvalidGrantError("resource does not match");
-      return this.#issueAccessToken(data, value.userId, value.clientId, scopes ?? value.scopes, value.resource);
+      const requestedScopes = scopes ?? value.scopes;
+      if (requestedScopes.some((scope) => !value.scopes.includes(scope))) {
+        throw new InvalidGrantError("Requested scope was not granted");
+      }
+      delete data.tokens[refreshToken];
+      return this.#issueTokens(data, value.userId, value.clientId, requestedScopes, value.resource);
     });
   }
 
