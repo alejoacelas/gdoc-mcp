@@ -6,16 +6,20 @@ edits, comments and round-trip reads.
 
 ## Run it
 
-Connect `https://gdoc-mcp-alejo.fly.dev/mcp` in Claude Desktop, start a new chat with
-the connector enabled, paste the contents of
-[`fixtures/remote-connector-challenge.md`](fixtures/remote-connector-challenge.md),
-then add this request:
+Connect `https://gdoc-mcp-alejo.fly.dev/mcp` in Claude Desktop and start a new chat
+with the connector enabled. Paste the request below, replacing `<paste the exact JSON
+fixture here>` with the complete contents of
+[`fixtures/remote-connector-challenge.json`](fixtures/remote-connector-challenge.json).
+The JSON fixture is derived from the readable
+[`remote-connector-challenge.md`](fixtures/remote-connector-challenge.md); its escaped
+double newlines stop Claude from removing Markdown-significant blank lines before the
+tool call.
 
 ```text
 Using only the gdoc connector:
 
-1. Create a pageless Google Doc titled "Remote gdoc MCP round-trip — 2026-08-21"
-   from the Markdown below. Do not simplify or rewrite it.
+1. Call create_document with the exact JSON object below. Copy its content string
+   byte-for-byte; do not reconstruct, simplify, or normalize it.
 2. Add a tab named "Verification".
 3. In that tab, insert a heading "Verification log" followed by three bullets:
    "Created remotely", "Read back successfully", and "Exact edit succeeded".
@@ -33,9 +37,9 @@ Using only the gdoc connector:
    names, comment ID, anchoring result, and a short pass/fail table for every check
    above. Do not resolve or delete anything.
 
-MARKDOWN STARTS
-<paste the fixture here>
-MARKDOWN ENDS
+CREATE_DOCUMENT JSON STARTS
+<paste the exact JSON fixture here>
+CREATE_DOCUMENT JSON ENDS
 ```
 
 ## Pass conditions
@@ -48,6 +52,10 @@ MARKDOWN ENDS
   Google Cloud project is enrolled in the Workspace Developer Preview Program; that is
   a known API boundary, not a transport failure.
 - Reading all tabs returns both sentinels and the exact unique anchor phrase.
+
+If the table becomes inline pipe-delimited text, inspect Claude's `create_document`
+request. The content must contain `remains exact.\n\n| Check`; a single newline makes
+the Markdown parser treat the table as part of the preceding list item.
 
 The native Google Drive connector is not an equivalent control: this test must invoke
 the custom gdoc tools for creation, tab handling, cell editing and comments.
