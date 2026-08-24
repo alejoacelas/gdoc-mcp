@@ -48,6 +48,16 @@ Hours rollout should therefore use an organization-owned Cloud project, an Inter
 OAuth audience, `ALLOWED_GOOGLE_DOMAIN=80000hours.org`, an organization-owned Fly app,
 and a separate token store from the personal test deployment.
 
+With that production setup, administrators do not maintain a list of employee email
+addresses. A Workspace administrator allows the OAuth client and its Docs/Drive scopes
+for the whole organization, and a Claude owner adds the connector once for the Claude
+organization. Any current or future `80000hours.org` user can then click **Connect** and
+grant their own account; the connector stores a separate token and inherits that user's
+Drive permissions. Creating the Workspace account makes the user eligible, while
+disabling it removes the underlying Google access. Per-user Connect remains necessary
+unless 80,000 Hours adopts Claude's separately available enterprise-managed connector
+authorization.
+
 ## Change ladder
 
 The table assumes the connector URL, Google OAuth client ID, requested scopes, token
