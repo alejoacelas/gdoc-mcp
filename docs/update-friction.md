@@ -46,7 +46,9 @@ grant. The hosted service necessarily holds those grants, so users trust whoever
 deploy its code or access both its encrypted token store and encryption key. An 80,000
 Hours rollout should therefore use an organization-owned Cloud project, an Internal
 OAuth audience, `ALLOWED_GOOGLE_DOMAIN=80000hours.org`, an organization-owned Fly app,
-and a separate token store from the personal test deployment.
+and a separate token store from the personal test deployment. The audited candidate
+project and its remaining steps are in
+[organization-project.md](organization-project.md).
 
 With that production setup, administrators do not maintain a list of employee email
 addresses. A Workspace administrator allows the OAuth client and its Docs/Drive scopes
