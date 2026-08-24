@@ -20,6 +20,34 @@ That manual boundary omitted `structure`, although upstream's MCP exposes it. Th
 `gdoc_cli` fallback also cannot call it because `structure` is absent from our command
 allowlist. This is a maintenance gap, not an authentication limitation.
 
+## Who can use one Google OAuth client?
+
+An OAuth client identifies the connector, not a Google user. One client can serve many
+users, and Google creates a separate grant for each user who consents:
+
+| Object | What it controls |
+|---|---|
+| Google Cloud project | App ownership, consent-screen configuration, enabled APIs, quota, and OAuth clients |
+| OAuth client ID and secret | Which application is asking Google for access; not access to any user's files by itself |
+| Per-user refresh token | The connector's delegated access for one Google account and the scopes that account granted |
+| Drive permissions | Which files that account can read, comment on, or edit |
+| OAuth audience, test-user list, Workspace policy, and `ALLOWED_GOOGLE_DOMAIN` | Which accounts are allowed to create per-user grants |
+
+The personal deployment is an **External** app in **Testing**. Google therefore permits
+only the accounts explicitly listed as test users, up to 100; their grants expire after
+seven days. The Fly deployment currently has no `ALLOWED_GOOGLE_DOMAIN`, so it adds no
+second account restriction. Any listed Google account that is not blocked by its
+Workspace administrator can connect, but it receives access only to files that account
+could already access. If the app were published as External, any Google account could
+attempt to authorize it, subject to Google's verification and Workspace policies.
+
+The OAuth client secret alone cannot read user data; it must be combined with a user's
+grant. The hosted service necessarily holds those grants, so users trust whoever can
+deploy its code or access both its encrypted token store and encryption key. An 80,000
+Hours rollout should therefore use an organization-owned Cloud project, an Internal
+OAuth audience, `ALLOWED_GOOGLE_DOMAIN=80000hours.org`, an organization-owned Fly app,
+and a separate token store from the personal test deployment.
+
 ## Change ladder
 
 The table assumes the connector URL, Google OAuth client ID, requested scopes, token
