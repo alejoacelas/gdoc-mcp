@@ -4,7 +4,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends git python3 python3-pip \
  && rm -rf /var/lib/apt/lists/* \
  && pip3 install --break-system-packages --no-cache-dir \
-      "git+https://github.com/LucaDeLeo/gdoc.git@31b430909e0d94f7ea31269266307e734b8929d3"
+      "git+https://github.com/LucaDeLeo/gdoc.git@dbfa4c34bfa699ee8dd9839da85eea1fac177d44"
 
 WORKDIR /app
 COPY package.json package-lock.json ./

@@ -119,9 +119,9 @@ GDOC_BIN=/absolute/path/to/gdoc npm start
 ```
 
 The server exposes typed tools for browser authorization, reading, search, tabs,
-revisions, comments, writes, edits, sharing, and document creation. `gdoc_cli` passes
-arguments to an explicit subcommand allowlist without invoking a shell; auth, config,
-update, and internal hooks cannot be reached through that raw tool.
+revisions, comments, writes, direct and suggested edits, sharing, and document creation.
+`gdoc_cli` passes arguments to an explicit subcommand allowlist without invoking a
+shell; auth, config, update, and internal hooks cannot be reached through that raw tool.
 
 ## Test
 

@@ -203,6 +203,25 @@ tool("edit_document", "Replace text or a table cell in a document. Replacement t
   return [...args, "--", ...positionals];
 });
 
+tool("suggest_edit", "Replace text as a reviewable Google Docs suggestion. Never falls back to a direct edit; requires a preview-enabled Google OAuth project.", {
+  doc,
+  old_text: z.string(),
+  new_text: z.string().describe("Replacement text; inline Markdown only"),
+  tab: z.string().optional(),
+  replace_all: z.boolean().optional(),
+  case_sensitive: z.boolean().optional(),
+  normalize: z.boolean().optional(),
+  account,
+  quiet: z.boolean().optional(),
+}, "suggest", (values) => {
+  const args = common([], values);
+  option(args, "--tab", values.tab);
+  if (values.replace_all) args.push("--all");
+  if (values.case_sensitive) args.push("--case-sensitive");
+  if (values.normalize) args.push("--normalize");
+  return [...args, "--", values.doc, values.old_text, values.new_text];
+});
+
 server.registerTool("create_document", {
   description: "Create a Google Doc, optionally initialized from Markdown.",
   inputSchema: {

@@ -32,6 +32,7 @@ export const RAW_ALLOWED_COMMANDS = new Set([
   "resolve",
   "revisions",
   "share",
+  "suggest",
   "tabs",
   "toc",
   "write",

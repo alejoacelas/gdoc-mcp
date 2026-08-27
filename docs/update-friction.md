@@ -4,6 +4,10 @@ Most hosted-connector updates require no user action. We update the pinned `gdoc
 version, expose and test the tool, and deploy Fly. Users keep their connector and
 Google grant.
 
+The personal Fly deployment currently runs `gdoc` 0.21.0, pinned to upstream commit
+`dbfa4c34bfa699ee8dd9839da85eea1fac177d44`. Its `suggest_edit` tool exposes the
+reviewable suggested-edit command added in that release.
+
 ## Why can upstream and the hosted connector differ?
 
 They are separate MCP implementations around the same CLI:

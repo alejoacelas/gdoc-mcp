@@ -19,6 +19,10 @@ test("commandArgv rejects commands outside the MCP allowlist", () => {
   assert.throws(() => commandArgv("update"), /unsupported gdoc command/);
 });
 
+test("suggest is available through the reviewed MCP allowlist", () => {
+  assert.equal(RAW_ALLOWED_COMMANDS.has("suggest"), true);
+});
+
 test("auth is executable only through the typed connection tool", () => {
   assert.deepEqual(commandArgv("auth", ["--account", "me@example.com"]), [
     "--json", "--allow-commands", "auth", "auth", "--account", "me@example.com",

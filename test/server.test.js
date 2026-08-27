@@ -26,6 +26,7 @@ test("stdio server lists tools and invokes gdoc without a shell", async () => {
     const { tools } = await client.listTools();
     assert.ok(tools.length >= 22);
     assert.ok(tools.some(({ name }) => name === "write_document"));
+    assert.ok(tools.some(({ name }) => name === "suggest_edit"));
     assert.ok(tools.some(({ name }) => name === "connect_google"));
 
     const result = await client.callTool({
@@ -36,6 +37,21 @@ test("stdio server lists tools and invokes gdoc without a shell", async () => {
     assert.deepEqual(JSON.parse(result.content[0].text).argv, [
       "--json", "--allow-commands", "cat", "cat", "--quiet", "--all-tabs", "--",
       "doc id; touch /tmp/never",
+    ]);
+
+    const suggested = await client.callTool({
+      name: "suggest_edit",
+      arguments: {
+        doc: "doc-id",
+        old_text: "before",
+        new_text: "**after**",
+        tab: "Draft",
+        case_sensitive: true,
+      },
+    });
+    assert.deepEqual(JSON.parse(suggested.content[0].text).argv, [
+      "--json", "--allow-commands", "suggest", "suggest", "--tab", "Draft",
+      "--case-sensitive", "--", "doc-id", "before", "**after**",
     ]);
 
     const connected = await client.callTool({
